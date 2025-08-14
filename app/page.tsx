@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Play, Calendar, MapPin, Trophy, Users, Star, Menu, X } from "lucide-react"
+import { formatMatchTime, getMatchStatus, type Match, type Highlight, type Testimonial } from "@/src/utils/football"
 
 export default function FootballLandingPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
@@ -24,7 +25,7 @@ export default function FootballLandingPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const highlights = [
+  const highlights: Highlight[] = [
     {
       title: "Campeonato Brasileiro",
       description: "Acompanhe todos os jogos da Série A",
@@ -45,14 +46,14 @@ export default function FootballLandingPage() {
     },
   ]
 
-  const matches = [
+  const matches: Match[] = [
     { home: "Flamengo", away: "Palmeiras", date: "15 Dez", time: "16:00", venue: "Maracanã" },
     { home: "São Paulo", away: "Corinthians", date: "17 Dez", time: "18:30", venue: "Morumbi" },
     { home: "Grêmio", away: "Internacional", date: "19 Dez", time: "20:00", venue: "Arena do Grêmio" },
     { home: "Atlético-MG", away: "Cruzeiro", date: "21 Dez", time: "19:00", venue: "Mineirão" },
   ]
 
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
       name: "Carlos Silva",
       text: "A melhor plataforma para acompanhar futebol! Nunca mais perco um jogo importante.",
@@ -258,7 +259,8 @@ export default function FootballLandingPage() {
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{match.time}</div>
+                        <div className="text-2xl font-bold text-green-600">{formatMatchTime(match.time)}</div>
+                        <div className="text-sm text-gray-600">{getMatchStatus(match.date)}</div>
                       </div>
                       <Button
                         variant="outline"
