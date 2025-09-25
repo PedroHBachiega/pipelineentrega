@@ -90,7 +90,7 @@ export default function FootballLandingPage() {
               <Trophy className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-yellow-500 bg-clip-text text-transparent">
-              FutPaixão
+              FutPedrão
             </span>
           </div>
 
