@@ -50,26 +50,32 @@ jobs:
           working-directory: ./
 
       # --- SLEUTH NOTIFY ---
-      # Só notifica se o deploy tiver sido bem-sucedido e a API key estiver configurada
+      # Usa a action oficial do Sleuth que funciona corretamente
       - name: Notify Sleuth
         if: ${{ success() && steps.deploy.outcome == 'success' && secrets.SLEUTH_API_KEY != '' }}
+        uses: sleuth-io/sleuth-pr-action@v1.0.0
+        with:
+          api-key: ${{ secrets.SLEUTH_API_KEY }}
+          environment: production
+        continue-on-error: true
+      
+      # Fallback: notificação manual se a action falhar
+      - name: Notify Sleuth (Manual)
+        if: ${{ success() && steps.deploy.outcome == 'success' && secrets.SLEUTH_API_KEY != '' }}
         run: |
-          echo "🔔 Notificando Sleuth sobre o deploy..."
-          curl -X POST \
+          echo "🔔 Tentando notificação manual do Sleuth..."
+          echo "📊 SHA: ${{ github.sha }}"
+          echo "🌐 Repo: ${{ github.repository }}"
+          
+          # Usar o endpoint correto do Sleuth
+          curl -X POST "https://app.sleuth.io/api/1/deployments/${{ github.repository }}/register_deploy" \
             -H "Authorization: Bearer ${{ secrets.SLEUTH_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{
               "sha": "${{ github.sha }}",
-              "environment": "production",
-              "date": "${{ github.event.head_commit.timestamp }}",
-              "links": [
-                {
-                  "name": "GitHub Commit",
-                  "url": "${{ github.event.head_commit.url }}"
-                }
-              ]
-            }' \
-            "https://app.sleuth.io/api/1/deployments/${{ github.repository }}" || echo "⚠️ Falha ao notificar Sleuth (verifique SLEUTH_API_KEY)"
+              "environment": "production"
+            }' || echo "⚠️ Notificação manual também falhou"
+        continue-on-error: true
       
       # Log de deploy bem-sucedido mesmo sem Sleuth
       - name: Deploy Success
