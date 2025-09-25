@@ -50,15 +50,31 @@ jobs:
           working-directory: ./
 
       # --- SLEUTH NOTIFY ---
-      # Só notifica se o deploy tiver sido bem-sucedido
+      # Só notifica se o deploy tiver sido bem-sucedido e a API key estiver configurada
       - name: Notify Sleuth
+        if: ${{ success() && steps.deploy.outcome == 'success' && secrets.SLEUTH_API_KEY != '' }}
+        run: |
+          echo "🔔 Notificando Sleuth sobre o deploy..."
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLEUTH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "sha": "${{ github.sha }}",
+              "environment": "production",
+              "date": "${{ github.event.head_commit.timestamp }}",
+              "links": [
+                {
+                  "name": "GitHub Commit",
+                  "url": "${{ github.event.head_commit.url }}"
+                }
+              ]
+            }' \
+            "https://app.sleuth.io/api/1/deployments/${{ github.repository }}" || echo "⚠️ Falha ao notificar Sleuth (verifique SLEUTH_API_KEY)"
+      
+      # Log de deploy bem-sucedido mesmo sem Sleuth
+      - name: Deploy Success
         if: ${{ success() && steps.deploy.outcome == 'success' }}
-        uses: sleuth-io/sleuth-action@v1
-        with:
-          api_key: ${{ secrets.SLEUTH_API_KEY }}   # crie esse secret no repo/org
-          environment: production                  # precisa bater com o ambiente definido no Sleuth
-          # opcional, mas útil:
-          revision: ${{ github.sha }}
-          repo: ${{ github.repository }}
-          # deployed_at: ${{ github.event.head_commit.timestamp }}
+        run: |
+          echo "🎉 Deploy realizado com sucesso!"
+          echo "📊 Para métricas DORA, configure SLEUTH_API_KEY nos secrets"
 
